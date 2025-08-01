@@ -6,6 +6,14 @@ import { usePuterStore } from "~/lib/puter";
 import { convertPdfToImage } from "~/lib/pdf2img";
 import { generateUUID } from "~/lib/utils";
 import { prepareInstructions } from "constants/index";
+import type { Route } from "./+types/home";
+
+export function meta({}: Route.MetaArgs) {
+  return [
+    { title: "Resumind | Upload" },
+    { name: "description", content: "Upload to Analyse your Resume" },
+  ];
+}
 
 const Upload = () => {
   const { auth, isLoading, ai, fs, kv } = usePuterStore();
