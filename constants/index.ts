@@ -229,8 +229,8 @@ export const prepareInstructions = ({
   jobTitle,
   jobDescription,
 }: {
-  jobTitle: string;
-  jobDescription: string;
+  jobTitle: String;
+  jobDescription: String;
 }) =>
   `You are an expert in ATS (Applicant Tracking System) and resume analysis.
   Please analyze and rate this resume and suggest how to improve it.

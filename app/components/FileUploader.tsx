@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { formatSize } from "~/lib/utils";
 
@@ -7,29 +7,67 @@ interface FileUploaderProps {
 }
 
 const FileUploader = ({ onFileSelect }: FileUploaderProps) => {
+  const [filePresent, setFilePresent] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const maxFileSize = 20 * 1024 * 1024;
+
+  // Unified handler for both drop and file picker
+  const handleFile = (file: File | null) => {
+    if (!file) return;
+    onFileSelect?.(file);
+    setUploadedFile(file);
+    setFilePresent(true);
+  };
+
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       const file = acceptedFiles[0] || null;
-      onFileSelect?.(file);
+      handleFile(file);
     },
     [onFileSelect]
   );
-  const maxFileSize = 20 * 1024 * 1024;
 
-  const { getRootProps, getInputProps, isDragActive, acceptedFiles } =
-    useDropzone({
-      onDrop,
-      multiple: false,
-      accept: { "application/pdf": [".pdf"] },
-      maxSize: maxFileSize,
-    });
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    multiple: false,
+    accept: { "application/pdf": [".pdf"] },
+    maxSize: maxFileSize,
+  });
 
-  const file = acceptedFiles[0] || null;
+  const handleIconClick = () => {
+    fileInputRef.current?.click(); // Open file picker manually
+  };
+
+  const handleManualFileSubmit = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    handleFile(file);
+  };
+
+  const handleRemoveFile = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setUploadedFile(null);
+    setFilePresent(false);
+    onFileSelect?.(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
   return (
     <div className="w-full gradient-border">
       <div {...getRootProps()}>
         <div className="space-y-4 cursor-pointer">
-          {file ? (
+          <input
+            type="file"
+            accept=".pdf"
+            ref={fileInputRef}
+            className="hidden"
+            onChange={handleManualFileSubmit}
+          />
+
+          {filePresent && uploadedFile ? (
             <div
               className="uploaded-selected-file flex flex-row justify-between p-5"
               onClick={(e) => e.stopPropagation()}
@@ -37,18 +75,16 @@ const FileUploader = ({ onFileSelect }: FileUploaderProps) => {
               <img src="/images/pdf.png" alt="pdf" className="size-10" />
               <div className="flex items-center space-x-3">
                 <div>
-                  <p className="text-sm font-medium text-gray-700  truncate max-w-xs">
-                    {file.name}
+                  <p className="text-sm font-medium text-gray-700 truncate max-w-xs">
+                    {uploadedFile.name}
                   </p>
                   <p className="text-sm text-gray-500">
-                    {formatSize(file.size)}
+                    {formatSize(uploadedFile.size)}
                   </p>
                 </div>
                 <button
                   className="p-2 cursor-pointer"
-                  onClick={(e) => {
-                    onFileSelect?.(null);
-                  }}
+                  onClick={handleRemoveFile}
                 >
                   <img
                     src="/icons/cross.svg"
@@ -59,8 +95,8 @@ const FileUploader = ({ onFileSelect }: FileUploaderProps) => {
               </div>
             </div>
           ) : (
-            <div>
-              <div className="mx-auto w-16 h-16 flex items-center justify-content-center mb-3">
+            <div onClick={handleIconClick}>
+              <div className="mx-auto w-16 h-16 flex items-center justify-center mb-3">
                 <img src="/icons/info.svg" alt="upload" className="size-20" />
               </div>
               <p className="text-lg text-gray-500">

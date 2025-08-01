@@ -2,10 +2,10 @@ import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router";
 import FileUploader from "~/components/FileUploader";
 import Navbar from "~/components/navbar";
-import { usePuterStore } from "~/lib/putter";
+import { usePuterStore } from "~/lib/puter";
 import { convertPdfToImage } from "~/lib/pdf2img";
 import { generateUUID } from "~/lib/utils";
-import { prepareInstructions } from "constants";
+import { prepareInstructions } from "constants/index";
 
 const Upload = () => {
   const { auth, isLoading, ai, fs, kv } = usePuterStore();
@@ -67,6 +67,7 @@ const Upload = () => {
       uploadedFile.path,
       prepareInstructions({ jobTitle, jobDescription })
     );
+    console.log(feedback);
 
     if (!feedback) return setStatusText("Error : Failed to Analyze resume");
 
@@ -79,6 +80,8 @@ const Upload = () => {
     await kv.set(`resume:${uuid}`, JSON.stringify(data));
     setStatusText("Analysis completed, redirecting....");
     console.log(data);
+
+    navigate(`/resume/${uuid}`);
   };
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -93,7 +96,7 @@ const Upload = () => {
     const jobDescription = formData.get("job-description") as String;
 
     if (!file) return;
-    console.log(file);
+    // console.log(file);
 
     handleAnalyze({ companyName, jobTitle, jobDescription, file });
   };

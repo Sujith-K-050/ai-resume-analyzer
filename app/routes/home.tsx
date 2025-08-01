@@ -1,7 +1,7 @@
 import Navbar from "~/components/navbar";
 import { resumes } from "../../constants";
 import ResumeCard from "~/components/ResumeCard";
-import { usePuterStore } from "~/lib/putter";
+import { usePuterStore } from "~/lib/puter";
 import { useNavigate } from "react-router";
 import { useEffect } from "react";
 import type { Route } from "./+types/home";
